@@ -8,14 +8,18 @@ Some application servers (e.g. Ruby's Unicorn) halt progress when dealing with n
 
 ## Versions
 
-* Buildpack Version: 0.7
-* NGINX Version: 1.11.3
+* Buildpack Version: 1.0
+* NGINX Version: 1.15.6
 
-## Requirements
+## Requirements (Proxy Mode)
 
 * Your webserver listens to the socket at `/tmp/nginx.socket`.
 * You touch `/tmp/app-initialized` when you are ready for traffic.
 * You can start your web server with a shell command.
+
+## Requirements (Solo Mode)
+
+* Add a custom nginx config to your app source code at `config/nginx.conf.erb`. You can start by copying the [sample config for nginx solo mode](config/nginx-solo-sample.conf.erb).
 
 ## Features
 
@@ -43,13 +47,24 @@ at=info method=GET path=/ host=salty-earth-7125.herokuapp.com request_id=e2c79e8
 
 ### Language/App Server Agnostic
 
-Nginx-buildpack provides a command named `bin/start-nginx` this command takes another command as an argument. You must pass your app server's startup command to `start-nginx`.
+nginx-buildpack provides a command named `bin/start-nginx` this command takes another command as an argument. You must pass your app server's startup command to `start-nginx`.
 
 For example, to get NGINX and Unicorn up and running:
 
 ```bash
 $ cat Procfile
 web: bin/start-nginx bundle exec unicorn -c config/unicorn.rb
+```
+
+### nginx Solo Mode
+
+nginx-buildpack provides a command named `bin/start-nginx-solo`. This is for you if you don't want to run an additional app server on the Dyno.
+This mode requires you to put a `config/nginx.conf.erb` in your app code. You can start by coping the [sample config for nginx solo mode](config/nginx-solo-sample.conf.erb).
+For example, to get NGINX and Unicorn up and running:
+
+```bash
+$ cat Procfile
+web: bin/start-nginx-solo
 ```
 
 ### Setting the Worker Processes
@@ -65,16 +80,29 @@ $ heroku config:set NGINX_WORKERS=8
 
 ### Customizable NGINX Config
 
-You can provide your own NGINX config by creating a file named `nginx.conf.erb` in the config directory of your app. Start by copying the buildpack's [default config file](https://github.com/ryandotsmith/nginx-buildpack/blob/master/config/nginx.conf.erb).
+You can provide your own NGINX config by creating a file named `nginx.conf.erb` in the config directory of your app. Start by copying the buildpack's [default config file](config/nginx.conf.erb).
 
 ### Customizable NGINX Compile Options
 
-See [scripts/build_nginx.sh](scripts/build_nginx.sh) for the build steps. Configuring is as easy as changing the "./configure" options.
+See [scripts/build_nginx](scripts/build_nginx) for the build steps. Configuring is as easy as changing the "./configure" options.
+
+You can run the builds in a [Docker](https://www.docker.com/) container:
+
+```
+$ make build # It outputs the latest builds to bin/cedar-*
+```
+
+To test the builds:
+
+```
+$ make shell
+$ cp bin/nginx-$STACK bin/nginx
+$ FORCE=1 bin/start-nginx
+```
 
 ### Application/Dyno coordination
 
-The buildpack will not start NGINX until a file has been written to `/tmp/app-initialized`. Since NGINX binds to the dyno's $PORT and since the $PORT determines if the app can receive traffic, you can delay NGINX accepting traffic until your application is ready to handle it. The examples below show how/when you should write the file when working with Unicorn.
-
+The buildpack will not start NGINX until a file has been written to /tmp/app-initialized. Since NGINX binds to the dyno's $PORT and since the $PORT determines if the app can receive traffic, you can delay NGINX accepting traffic until your application is ready to handle it. The examples below show how/when you should write the file when working with Unicorn.
 ## Setup
 
 Here are 2 setup examples. One example for a new app, another for an existing app. In both cases, we are working with ruby & unicorn. Keep in mind that this buildpack is not ruby specific.
@@ -83,11 +111,7 @@ Here are 2 setup examples. One example for a new app, another for an existing ap
 
 Update Buildpacks
 ```bash
-$ heroku config:set BUILDPACK_URL=https://github.com/ddollar/heroku-buildpack-multi.git
-$ echo 'https://github.com/ryandotsmith/nginx-buildpack.git' >> .buildpacks
-$ echo 'https://codon-buildpacks.s3.amazonaws.com/buildpacks/heroku/ruby.tgz' >> .buildpacks
-$ git add .buildpacks
-$ git commit -m 'Add multi-buildpack'
+$ heroku buildpacks:add https://github.com/beanieboi/nginx-buildpack
 ```
 Update Procfile:
 ```
@@ -154,9 +178,9 @@ web: bin/start-nginx bundle exec unicorn -c config/unicorn.rb
 ```
 Create & Push Heroku App:
 ```bash
-$ heroku create --buildpack https://github.com/ddollar/heroku-buildpack-multi.git
-$ echo 'https://codon-buildpacks.s3.amazonaws.com/buildpacks/heroku/ruby.tgz' >> .buildpacks
-$ echo 'https://github.com/ryandotsmith/nginx-buildpack.git' >> .buildpacks
+$ heroku create
+$ heroku buildpacks:add heroku/ruby
+$ heroku buildpacks:add https://github.com/beanieboi/nginx-buildpack
 $ git add .
 $ git commit -am "init"
 $ git push heroku master

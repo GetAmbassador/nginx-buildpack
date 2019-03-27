@@ -1,48 +1,60 @@
-## v0.7
+# Changelog
+All notable changes to this project will be documented in this file.
 
-2016-02-14
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-* Update nginx to 1.11.3
-* Update PCRE to 8.39
+## [0.9] - 2018-10-05
+### Added
+- update nginx to 1.15.5
+- add nginx solo support, see [sample config for nginx solo mode](config/nginx-solo-sample.conf.erb) and [README](README.md)
+- add headers-more module from https://github.com/openresty/headers-more-nginx-module
 
-## v0.6
+### Changed
+- updated build scripts to compile on 2 cores (-j 2)
 
-2016-02-14
+## [0.8] - 2018-09-13
+### Changed
+- update nginx to 1.15.3
+- update PCRE to 8.42
 
-* Update nginx to 1.9.11
-* Update PCRE to 8.38
+## [0.7] - 2016-02-14
+### Changed
+- update nginx to 1.11.3
+- update PCRE to 8.39
 
-## v0.5
+## [0.6] - 2016-02-14
+### Changed
+- update nginx to 1.9.11
+- update PCRE to 8.38
 
-2015-05-09
+## [0.5] - 2015-05-09
+### Added
+- gzip static module
 
-* Update nginx to 1.8.0
-* add gzip static module
+### Changed
+- update nginx to 1.8.0
 
-## v0.4
+## [0.4] - 2012-05-13
+### Added
+- enabled gzip compression
 
-2012-05-13
+## [0.4] - 2012-05-13
+### Added
+- enabled gzip compression
 
-Update NGINX config
+### Changed
+- include most recent nginx config
+- using epoll and increasing workers to 4
 
-* enabled gzip compression
-* using epoll and increasing workers to 4
+## [0.3] - 2012-05-11
+### Changed
+- Improve process managment using a fifo.
 
-## v0.3
+## [0.2] - 2012-05-10
+### Changed
+- Improve the handling of app server failures
 
-2012-05-11
-
-* Improve process managment using a fifo.
-
-## v0.2
-
-2012-05-10
-
-* Improve the handling of app server failures
-
-## v0.1
-
-2012-05-09
-
-* NGINX 1.4.1
-* inital release
+## [0.1] - 2012-05-09
+### Added
+- initial release with NGINX 1.4.1
